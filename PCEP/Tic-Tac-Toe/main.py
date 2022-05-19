@@ -37,18 +37,8 @@ def is_valid(board, choice):
     if all_fields[choice - 1] not in free_fields:
         print("The cell is already occupied")
         return False
-
-
-def enter_move(board):
-    # The function accepts the board's current status, asks the user about their move, 
-    # checks the input, and updates the board according to the user's decision.
-    while True:
-        choice = input("Choose a cell[1 - 9]: ")
-        print("Choice: ", choice)
-        if is_valid(board, choice):
-            cell = make_list_of_all_fields(board)[choice - 1]
-            board[cell[0], cell[1]] = 'O'
-            break
+    
+    return True
 
 
 def make_list_of_free_fields(board):
@@ -56,6 +46,7 @@ def make_list_of_free_fields(board):
     # the list consists of tuples, while each tuple is a pair of row and column numbers.
 
     return [(i, j) for i, row in enumerate(board) for j, cell in enumerate(row) if cell != 'X' and cell != 'O']
+
 
 def make_list_of_all_fields(board):
     # The function browses the board and builds a list of all the squares; 
@@ -69,8 +60,8 @@ def victory_for(board, sign):
     # the player using 'O's or 'X's has won the game
     
     # invert board
-    t_board = [[board[x][y] for x in range(len(board)) for y in range(len(board[x])) if x == i] for i in range(len(board))]
-    
+    t_board = [[board[y][x] for x in range(len(board)) for y in range(len(board[x])) if x == i] for i in range(len(board))]
+
     return search_linear_horizontal_win(board, sign) or search_linear_horizontal_win(t_board, sign) or search_diagonal_win(board, sign)
 
 
@@ -92,7 +83,7 @@ def search_diagonal_win(board, sign):
     # the function analyzes the board's status in order to check if 
     # there is diagonal pattern in the board with sign
     
-    return len([board[x][x] for x in range(len(board)) if board[x][x] == sign]) == len(board) or len([board[x][len(board)- x] for x in range(len(board)) if board[x][x] == sign]) == len(board)
+    return len([board[x][x] for x in range(len(board)) if board[x][x] == sign]) == len(board) or len([board[x][len(board) -1 - x] for x in range(len(board)) if board[x][len(board) - 1 - x] == sign]) == len(board)
         
     
 def draw_move(board):
@@ -100,17 +91,42 @@ def draw_move(board):
     
     while True:
         choice = randrange(1, 10)
-        print("Choice: ", choice)
+        print("PC Choice: ", choice)
         if is_valid(board, choice):
-            cell = make_list_of_all_fields(board)[choice - 1]
-            board[cell[0], cell[1]] = 'X'
+            update_board(board, choice, 'X')
             break
+        
+def draw_first_move(board):
+    # The function draws the computer's firstmove and updates the board.
+    
+    START_POSITION = 5
+    print("PC Choice: ", START_POSITION)
+    update_board(board, START_POSITION, 'X')
+    
+
+def enter_move(board):
+    # The function accepts the board's current status, asks the user about their move, 
+    # checks the input, and updates the board according to the user's decision.
+    while True:
+        choice = input("Choose a cell[1 - 9]: ")
+        print("PLAYER Choice: ", choice)
+        if is_valid(board, choice):
+            update_board(board, choice, 'O')
+            break
+    
+
+def update_board(board, choice, sign):
+    # The function updates the board.
+    
+    cell = make_list_of_all_fields(board)[int(choice) - 1]
+    board[cell[0]][cell[1]] = sign
 
 
 def create_board():
     # The function create the starting board
     
     return [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
 
 def play():
     # The function manage the game
@@ -122,11 +138,12 @@ def play():
     while True:
         
         N_TURN += 1
+        print("TURN :", N_TURN)
         
         # PC plays first
-        draw_move(board)
+        draw_first_move(board) if N_TURN == 1 else draw_move(board)
         display_board(board)
-        if(victory_for(board, 'X')):
+        if victory_for(board, 'X'):
             print('PC WINS')
             break
             
@@ -134,7 +151,7 @@ def play():
         enter_move(board)
         display_board(board)
         
-        if(victory_for(board, 'X')):
+        if victory_for(board, 'O'):
             print('PLAYER WINS')
             break
             
